@@ -1,0 +1,191 @@
+<div>
+  <div class="_container">
+    <div class="blog-title">
+      <h1 class="title">
+        Migrating gwenduling.com from free hosting to AWS
+      </h1>
+      <div class="blog-desc">
+        by&nbsp;
+        <p class="author">AJ Quiambao</p>
+        &nbsp;
+        <p class="date">January 10, 2021</p>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="blog-img"></div>
+
+  <div class="_container">
+    <div class="blog-content">
+      <p>
+        For more than a year now my girlfriend (Gwe 🐥) kept on complaining about how <a href="http://gwenduling.com"
+          target="_blank">her website</a> is deployed only on a free
+        serverless hosting that she figured out all on her own (it was already live before I met her). The application
+        oftens
+        become unreachable and the things she can do with it was only limited because it's free.
+      </p>
+
+      <p>
+        Other than a paid hosting, she also wanted a dedicated server. Why? She recently implemented a <strong>server
+          side
+          rendering</strong> for her
+        <strong>client side</strong>
+        Angular website. Basically she has a single page application that she wants Google (and others) to treat as if
+        they
+        are really in separate pages. Since it is currently serverless, she has to prerender the server HTML files
+        manually
+        in her local setup every
+        time she posts
+        a new blog post, and then upload
+        it in the file manager where her site was hosted 🥵. These annoying but important steps are going to be
+        eliminated
+        by the server.
+      </p>
+
+      <p>
+        What delayed me with working on this is the fact that I know she doesn't just need better and paid services, she
+        will also
+        want me to automate her processes <strong>(git push → build → deploy)</strong> so that we can replicate the
+        workflow
+        she is used to
+        at work. We are both employed
+        in
+        the same company, current and the one before 🤪 so we already know how we both want out workflow to be.
+      </p>
+
+      <p>The next issue then is time and we finally
+        had some free time (and productivity) during our 2020
+        holiday break.</p>
+
+      <h2>Planning phase...</h2>
+      <p>I summarized her requirements (problems) and they are:</p>
+      <ol>
+        <li>More powerful hosting to minimize downtime</li>
+        <li>Dedicated server for Angular Universal</li>
+        <li>Automation to build and deploy her app</li>
+        <li>Remove the unsecured icon in the URL bar (if possible)</li>
+        <li>CDN for her blog images going forward</li>
+      </ol>
+
+      <p>Her requirements seemed so simple at first glance. It was not until I tried to dig deeper that I understood
+        that
+        they are a lot and this is not going to be a simple project.</p>
+      <p>
+        I then analyzed what options are best for what was needed. I updated her requirements into questions that
+        helped me conceptualize it better.
+      </p>
+
+      <ul>
+        <li>What is the maximum budget allowed?</li>
+        <li>What is the best CI and CD to use?</li>
+        <li>Is it better to containerized her application?</li>
+        <li>Should I enable TLS/SSL on the website even though it has no transactions?</li>
+        <li>What is the best cloud provider to use?</li>
+        <ul>
+          <li>Is it a good idea to migrate the domain from GoDaddy to the new cloud provider?</li>
+        </ul>
+        <li>What is the best DNS service to use?</li>
+      </ul>
+
+      <h2>Execution Phase...</h2>
+      <p>After thorough evaluation of the requirements and available solutions, I ended up using <a
+          href="https://aws.amazon.com/" target="_blank">Amazon Web Services (AWS)</a> as cloud provider
+        among other things. Why?</p>
+      <ul>
+        <li><strong>Ease of use.</strong> As compared to other cloud providers I have tried.</li>
+        <li><strong>Lot’s of free services.</strong> Check their <a href="https://aws.amazon.com/free/"
+            target="_blank">Free
+            Tier</a>! </li>
+        <li>
+          <strong>Pay-As-You-Go pricing.</strong> I predict that most of the services are going to be used (abused) only
+          in
+          the beginning as I set it up. After that and if it runs smoothly, the services won't be used as much which
+          makes
+          the pay-as-you-go pricing ideal in this situation.
+        </li>
+      </ul>
+
+      <h2>Technologies used:</h2>
+      <h3>
+        👉🏼 Docker
+      </h3>
+      <p>
+        I decided to containerized the application to easily deploy the application whenever I want.
+      </p>
+      <h3>
+        👉🏼 CI/CD (AWS CodePipeline)
+      </h3>
+      <p>The good thing about this is that it is a Pipeline, meaning you can configure or setup the workflow that you
+        desire. Here's how I configured the application:</p>
+      <ol>
+        <li>
+          <strong>Source</strong>: check out the repository from GitHub
+        </li>
+        <li>
+          <strong>Build and Test</strong>: build the Angular application using AWS CodeBuild. To
+          easily track my build commands I created the <strong>buildspec.yml</strong> a spec file that is supported by
+          CodeBuild
+        </li>
+        <li>
+          <strong>Deploy</strong>: if build is successful it would automatically deploy to <a
+            href="https://gwenduling.com" target="_blank">gwenduling.com</a>. This
+          stage calls the AWS CodeDeploy to communicate with my EC2 instance.
+        </li>
+      </ol>
+
+      <h3>
+        👉🏼 Reverse Proxy (NGINX)
+      </h3>
+
+      <p>
+        I have 2 options here; I could either use NGINX to proxy the application or use AWS Load Balancer to make the
+        application accessible.
+        After weighing my use case, I decided to just go with NGINX for now since NGINX is
+        configurable meaning I have more freedom to play around if I want to test something new.
+      </p>
+      <h3>
+        👉🏼 TLS/SSL (Let’s Encrypt)
+      </h3>
+      <p>By default, most of websites are deployed using HTTP. HTTPS comes in if you want to indicate that your website
+        is
+        secure. The technology that powers the additional “<strong>S</strong>” is the Secure Sockets Layer (SSL). When
+        to
+        use SSL? If you have a sensitive information that needs to be secured.
+      </p>
+      <p>
+        Before migrating it to AWS, the application uses only HTTP but when I migrated it on AWS, I added the SSL even
+        though
+        there’s no sensitive information in it as it just a blog. I still decided on using Let's Encrypt to generate
+        free
+        trusted
+        certificates because it's free anyway and the additional load time won't make a big difference since it's a
+        lightweight application.
+      </p>
+
+      <h3>
+        👉🏼 DNS Service (Route 53)
+      </h3>
+      <p>The application is a paid domain, it was bought from GoDaddy. Rather than transferring the ownership to AWS
+        Route53, I decided to just change the Name Servers on Godaddy to Point it on the AWS Route53
+        nameservers. This way, the new application that is deployed on AWS would be able to use the current domain.
+      </p>
+      <hr>
+      <h2>
+        What's next?
+      </h2>
+      <p>
+        After the success of our side project, it is now my turn to have a website of my own. The hardest part with
+        portolios and personal website has always been content, so now that the problem is solved (with this blog post),
+        we
+        pushed through and here we are! <i>(Let's talk about some other time how awesome it is to work with my
+          girlfriend
+          despite the fact that companies frown upon it!)</i>
+      </p>
+      <p>As a challenge to myself I'll be using different technologies this time. And I'll blog about it again.</p>
+
+      <p>And that's it! Thank you for reading my first blog!!!</p>
+    </div>
+  </div>
+
+</div>

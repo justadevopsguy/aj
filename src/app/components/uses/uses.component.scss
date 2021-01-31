@@ -1,0 +1,42 @@
+:host {
+  display: flex;
+}
+
+.uses-component {
+  .type {
+    font-size: 25px;
+    font-weight: 800;
+
+    &:not(:first-child) {
+      margin-top: 20px;
+    }
+  }
+}
+
+.use-item {
+  margin-top: 7px;
+  display: flex;
+  font-size: 18px;
+
+  > *:first-child {
+    flex-shrink: 0;
+  }
+
+  .name {
+    font-weight: 400;
+  }
+
+  .link {
+    font-weight: 400;
+    text-decoration: none;
+    color: var(--color-accent);
+  }
+
+  .description {
+    font-weight: 200;
+  }
+
+  @media (max-width: 550px) {
+    flex-direction: column;
+  }
+}

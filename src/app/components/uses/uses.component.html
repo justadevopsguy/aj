@@ -1,0 +1,24 @@
+<div class="uses-component _container">
+  <ng-container *ngFor="let type of uses">
+    <p class="type">{{ type.name }}</p>
+
+    <ul>
+      <li *ngFor="let item of type.items">
+        <div class="use-item">
+          <ng-container *ngIf="item.link">
+            <a class="link" href="{{ item.link }}" target="_blank">{{ item.name }}</a>
+          </ng-container>
+
+          <ng-container *ngIf="!item.link">
+            <p class="name">{{ item.name }}</p>
+          </ng-container>
+
+          <p *ngIf="item.description" class="description">
+            &nbsp;- {{ item?.description }}
+          </p>
+        </div>
+      </li>
+    </ul>
+
+  </ng-container>
+</div>
